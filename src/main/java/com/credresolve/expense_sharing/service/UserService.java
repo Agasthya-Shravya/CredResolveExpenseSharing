@@ -1,7 +1,7 @@
 package com.credresolve.expense_sharing.service;
 
 import org.springframework.stereotype.Service;
-
+import java.util.List;
 import com.credresolve.expense_sharing.model.User;
 import com.credresolve.expense_sharing.repository.UserRepository;
 
@@ -17,4 +17,9 @@ public class UserService {
     public User createUser(User user) {
     	return userRepository.save(user);
     }
+    
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
 }
