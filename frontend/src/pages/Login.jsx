@@ -1,49 +1,99 @@
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import api from "../api/axios";
 import Navbar from "../components/Navbar";
-import { Link } from "react-router-dom";
 
 export default function Login() {
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+      });
+
+      localStorage.setItem("user", JSON.stringify(res.data));
+      navigate("/userdashboard");
+    } catch (err) {
+      setError("Invalid email or password");
+    }
+  };
+
   return (
     <>
       <Navbar />
 
-      <div className="page">
-        <div className="page-image">
-          <img
-            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.svg"
-            alt="Login"
-            style={{ maxWidth: "80%" }}
-          />
-        </div>
+      <section className="min-vh-100 d-flex align-items-center">
+        <div className="container-fluid py-5">
+          <div className="row align-items-center">
 
-        <div className="page-form">
-          <h3 className="mb-4">Login</h3>
-
-          <div className="mb-3">
-            <label>Email address</label>
-            <input className="form-control form-control-lg" />
-          </div>
-
-          <div className="mb-3">
-            <label>Password</label>
-            <input type="password" className="form-control form-control-lg" />
-          </div>
-
-          <div className="d-flex justify-content-between mb-3">
-            <div>
-              <input type="checkbox" defaultChecked /> Remember me
+            {/* Image */}
+            <div className="col-md-6">
+              <img
+                src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.svg"
+                className="img-fluid"
+                alt="Login"
+              />
             </div>
-            <a href="#">Forgot password?</a>
+
+            {/* Form */}
+            <div className="col-md-6">
+              <form onSubmit={handleLogin}>
+
+                {error && (
+                  <div className="alert alert-danger">{error}</div>
+                )}
+
+                <div className="mb-4">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-control form-control-lg"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="form-label">Password</label>
+                  <input
+                    type="password"
+                    className="form-control form-control-lg"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-lg w-100 mb-3"
+                >
+                  Sign in
+                </button>
+
+                <div className="text-center">
+                  <p>
+                    New user? <Link to="/signup">Signup</Link>
+                  </p>
+                </div>
+
+              </form>
+            </div>
+
           </div>
-
-          <button className="btn btn-primary w-100 mb-3">
-            Sign in
-          </button>
-
-          <p className="text-center">
-            New user? <Link to="/signup">Signup</Link>
-          </p>
         </div>
-      </div>
+      </section>
     </>
   );
 }
