@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Set;
+import java.util.Map;
+
 
 @Service
 public class ExpenseService {
@@ -56,4 +58,34 @@ public class ExpenseService {
 
         return expense;
     }
+    public Expense addExactExpense(String description,
+            BigDecimal amount,
+            Group group,
+            User paidBy,
+            Map<Long, BigDecimal> userAmountMap) {
+
+				Expense expense = new Expense();
+				expense.setDescription(description);
+				expense.setAmount(amount);
+				expense.setSplitType(SplitType.EXACT);
+				expense.setGroup(group);
+				expense.setPaidBy(paidBy);
+
+				expense = expenseRepository.save(expense);
+			
+				for (Map.Entry<Long, BigDecimal> entry : userAmountMap.entrySet()) {
+					User user = group.getUsers().stream().filter(u -> u.getId().equals(entry.getKey())).findFirst().orElseThrow(() -> new RuntimeException("User not in group"));
+					
+					BigDecimal splitAmount = entry.getValue();
+		
+					expenseSplitRepository.save(new ExpenseSplit(expense, user, splitAmount));
+					
+					if (!user.getId().equals(paidBy.getId())) {
+						balanceRepository.save(new Balance(user, paidBy, splitAmount));
+					}
+				}
+			
+			return expense;
+    }
+
 }

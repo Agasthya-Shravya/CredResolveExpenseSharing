@@ -7,7 +7,7 @@ import com.credresolve.expense_sharing.repository.GroupRepository;
 import com.credresolve.expense_sharing.repository.UserRepository;
 import com.credresolve.expense_sharing.service.ExpenseService;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Map;
 import java.math.BigDecimal;
 
 @RestController
@@ -40,4 +40,22 @@ public class ExpenseController {
 
         return expenseService.addEqualExpense(description, amount, group, paidBy);
     }
+    @PostMapping("/exact")
+    public Expense addExactExpense(@RequestParam String description,
+                                   @RequestParam BigDecimal amount,
+                                   @RequestParam Long groupId,
+                                   @RequestParam Long paidByUserId,
+                                   @RequestBody Map<Long, BigDecimal> splits) {
+
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+
+        User paidBy = userRepository.findById(paidByUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return expenseService.addExactExpense(
+                description, amount, group, paidBy, splits
+        );
+    }
+
 }
