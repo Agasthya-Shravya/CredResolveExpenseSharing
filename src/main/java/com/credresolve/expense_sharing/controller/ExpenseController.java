@@ -57,5 +57,22 @@ public class ExpenseController {
                 description, amount, group, paidBy, splits
         );
     }
+    @PostMapping("/percentage")
+    public Expense addPercentageExpense(@RequestParam String description,
+                                        @RequestParam BigDecimal amount,
+                                        @RequestParam Long groupId,
+                                        @RequestParam Long paidByUserId,
+                                        @RequestBody Map<Long, BigDecimal> percentages) {
+
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+
+        User paidBy = userRepository.findById(paidByUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return expenseService.addPercentageExpense(
+                description, amount, group, paidBy, percentages
+        );
+    }
 
 }

@@ -87,5 +87,37 @@ public class ExpenseService {
 			
 			return expense;
     }
+    public Expense addPercentageExpense(String description,
+            BigDecimal amount,
+            Group group,
+            User paidBy,
+            Map<Long, BigDecimal> userPercentageMap) {
 
+				Expense expense = new Expense();
+				expense.setDescription(description);
+				expense.setAmount(amount);
+				expense.setSplitType(SplitType.PERCENTAGE);
+				expense.setGroup(group);
+				expense.setPaidBy(paidBy);
+				
+				expense = expenseRepository.save(expense);
+				
+				for (Map.Entry<Long, BigDecimal> entry : userPercentageMap.entrySet()) {
+					User user = group.getUsers().stream().filter(u -> u.getId().equals(entry.getKey())).findFirst().orElseThrow(() -> new RuntimeException("User not in group"));
+						
+					
+					
+					BigDecimal percentage = entry.getValue();
+					BigDecimal splitAmount = amount.multiply(percentage).divide(BigDecimal.valueOf(100));
+					
+					expenseSplitRepository.save(new ExpenseSplit(expense, user, splitAmount));
+					
+					if (!user.getId().equals(paidBy.getId())) {
+						balanceRepository.save(new Balance(user, paidBy, splitAmount));
+					}
+				}
+				
+				return expense;
+				
+    }
 }
