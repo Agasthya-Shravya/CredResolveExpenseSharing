@@ -1,53 +1,76 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../api/axios";
+import DashboardNavbar from "../components/DashboardNavbar";
 
+export default function AddExpense() {
 
-function AddExpense() {
-  const [groups, setGroups] = useState([]);
-  const [users, setUsers] = useState([]);
+  const { groupId } = useParams();
+  const navigate = useNavigate();
 
-  const [groupId, setGroupId] = useState("");
-  const [amount, setAmount] = useState("");
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const [members, setMembers] = useState([]);
   const [description, setDescription] = useState("");
-  const [paidBy, setPaidBy] = useState("");
+  const [amount, setAmount] = useState("");
+  const [paidBy, setPaidBy] = useState(user.id);
   const [splitType, setSplitType] = useState("EQUAL");
-
   const [splits, setSplits] = useState({});
 
   useEffect(() => {
-    fetchGroups();
-    fetchUsers();
-  }, []);
+    api.get(`/groups/${groupId}`).then(res => {
+      setMembers(res.data.users);
 
-  const fetchGroups = async () => {
-    const res = await api.get("/groups");
-    setGroups(res.data);
+      const initSplits = {};
+      res.data.users.forEach(u => initSplits[u.id] = 0);
+      setSplits(initSplits);
+    });
+  }, [groupId]);
+
+  const handleSplitChange = (id, value) => {
+    setSplits({ ...splits, [id]: value });
   };
 
-  const fetchUsers = async () => {
-    const res = await api.get("/users");
-    setUsers(res.data);
-  };
-
-  const handleSplitChange = (userId, value) => {
-    setSplits({ ...splits, [userId]: value });
-  };
-
-  const submitExpense = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (splitType === "EXACT") {
+      const total = Object.values(splits)
+        .reduce((a, b) => a + Number(b), 0);
+
+      if (total !== Number(amount)) {
+        alert("Exact split must equal total amount");
+        return;
+      }
+    }
+
+    if (splitType === "PERCENTAGE") {
+      const total = Object.values(splits)
+        .reduce((a, b) => a + Number(b), 0);
+
+      if (total !== 100) {
+        alert("Percentage split must total 100%");
+        return;
+      }
+    }
+
     const payload = {
-      groupId,
-      amount,
+      groupId: Number(groupId),
+      paidBy: Number(paidBy),
+      amount: Number(amount),
       description,
-      paidBy,
       splitType,
-      splits
+      splits: {}
     };
+
+    members.forEach(m => {
+      payload.splits[m.id] =
+        splitType === "EQUAL" ? 0 : Number(splits[m.id]);
+    });
 
     try {
       await api.post("/expenses", payload);
-      alert("Expense added successfully");
+      navigate(`/viewgroup/${groupId}`);
     } catch (err) {
       console.error(err);
       alert("Failed to add expense");
@@ -55,66 +78,74 @@ function AddExpense() {
   };
 
   return (
-    <div className="container mt-4">
-      <h3>Add Expense</h3>
+    <>
+      <DashboardNavbar />
 
-      <form onSubmit={submitExpense}>
-        {/* Group */}
-        <select className="form-select mb-2" onChange={e => setGroupId(e.target.value)}>
-          <option value="">Select Group</option>
-          {groups.map(g => (
-            <option key={g.id} value={g.id}>{g.name}</option>
-          ))}
-        </select>
+      <div className="container mt-4">
+        <h3>Add Expense</h3>
 
-        {/* Amount */}
-        <input
-          className="form-control mb-2"
-          placeholder="Amount"
-          type="number"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
-        />
+        <form onSubmit={handleSubmit}>
 
-        {/* Description */}
-        <input
-          className="form-control mb-2"
-          placeholder="Description"
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-        />
+          <input
+            className="form-control mb-2"
+            placeholder="Description"
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            required
+          />
 
-        {/* Paid By */}
-        <select className="form-select mb-2" onChange={e => setPaidBy(e.target.value)}>
-          <option value="">Paid By</option>
-          {users.map(u => (
-            <option key={u.id} value={u.id}>{u.name}</option>
-          ))}
-        </select>
+          <input
+            type="number"
+            className="form-control mb-2"
+            placeholder="Amount"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            required
+          />
 
-        {/* Split Type */}
-        <select className="form-select mb-3" onChange={e => setSplitType(e.target.value)}>
-          <option value="EQUAL">Equal</option>
-          <option value="EXACT">Exact</option>
-          <option value="PERCENTAGE">Percentage</option>
-        </select>
+          <select
+            className="form-select mb-2"
+            value={paidBy}
+            onChange={e => setPaidBy(e.target.value)}
+          >
+            {members.map(m => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
 
-        {/* Split Inputs */}
-        {splitType !== "EQUAL" &&
-          users.map(u => (
-            <input
-              key={u.id}
-              className="form-control mb-2"
-              placeholder={`${u.name} ${splitType === "EXACT" ? "Amount" : "Percentage"}`}
-              onChange={e => handleSplitChange(u.id, e.target.value)}
-            />
-          ))
-        }
+          <select
+            className="form-select mb-2"
+            value={splitType}
+            onChange={e => setSplitType(e.target.value)}
+          >
+            <option value="EQUAL">Equal</option>
+            <option value="EXACT">Exact</option>
+            <option value="PERCENTAGE">Percentage</option>
+          </select>
 
-        <button className="btn btn-success">Add Expense</button>
-      </form>
-    </div>
+          {splitType !== "EQUAL" &&
+            members.map(m => (
+              <input
+                key={m.id}
+                type="number"
+                className="form-control mb-2"
+                placeholder={m.name}
+                onChange={e =>
+                  handleSplitChange(m.id, e.target.value)
+                }
+                required
+              />
+            ))
+          }
+
+          <button className="btn btn-success">
+            Add Expense
+          </button>
+
+        </form>
+      </div>
+    </>
   );
 }
-
-export default AddExpense;

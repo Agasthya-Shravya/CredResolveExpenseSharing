@@ -15,7 +15,7 @@ export default function CreateGroup() {
     try {
       await api.post("/groups", {
         name: name,
-        userIds: [user.id], // logged-in user added automatically
+        userIds: [user.id],
       });
 
       alert("Group created successfully");

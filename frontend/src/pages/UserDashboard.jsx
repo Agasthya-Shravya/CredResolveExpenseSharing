@@ -9,7 +9,6 @@ export default function UserDashboard() {
 
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // Fetch groups of logged-in user
   useEffect(() => {
     const fetchGroups = async () => {
       try {

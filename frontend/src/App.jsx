@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import UserDashboard from "./pages/UserDashboard";
@@ -37,6 +36,7 @@ function App() {
       <Route path="/creategroup" element={<CreateGroup />} />
       <Route path="/addmember/:groupId" element={<AddMember />} />
       <Route path="/viewgroup/:groupId" element={<ViewGroup/>}/>
+      <Route path="/addexpense/:groupId" element={<AddExpense />} />
 
       <Route
         path="/groups"
