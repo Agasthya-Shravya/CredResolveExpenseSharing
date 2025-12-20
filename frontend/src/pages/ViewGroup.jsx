@@ -1,105 +1,77 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import api from "../api/axios";
+import DashboardNavbar from "../components/DashboardNavbar";
 
 export default function ViewGroup() {
   const { groupId } = useParams();
 
   const [group, setGroup] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch(`http://localhost:8080/groups/${groupId}/summary`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to fetch group details");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setGroup(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, [groupId]);
+    const fetchGroup = async () => {
+      try {
+        const res = await api.get(`/groups/${groupId}/summary`);
+        setGroup(res.data);
+      } 
+        catch (err) {
+  console.log("AXIOS ERROR FULL 👉", err);
+  console.log("AXIOS RESPONSE 👉", err.response);
+  console.log("AXIOS REQUEST 👉", err.request);
+  setError("Failed to fetch group details");
+}
 
-  if (loading) {
-    return (
-      <>
-        <Navbar />
-        <div className="container mt-4">Loading...</div>
-      </>
-    );
-  }
+         };
+
+    fetchGroup();
+  }, [groupId]);
 
   if (error) {
     return (
       <>
-        <Navbar />
+        <DashboardNavbar />
         <div className="container mt-4 text-danger">{error}</div>
+      </>
+    );
+  }
+
+  if (!group) {
+    return (
+      <>
+        <DashboardNavbar />
+        <div className="container mt-4">Loading group...</div>
       </>
     );
   }
 
   return (
     <>
-      <Navbar />
-
+      <DashboardNavbar />
       <div className="container mt-4">
+        <h3>{group.groupName}</h3>
+        <p>Total Expense: ₹{group.totalExpense}</p>
 
-        {/* Group Header */}
-        <div className="card mb-4">
-          <div className="card-body">
-            <h3 className="card-title">{group.groupName}</h3>
-            <h5 className="text-muted">
-              Total Expense: ₹{group.totalExpense}
-            </h5>
-          </div>
-        </div>
-
-        {/* Members Table */}
-        <div className="card">
-          <div className="card-body">
-            <h4 className="mb-3">Members Summary</h4>
-
-            <table className="table table-bordered text-center">
-              <thead className="table-light">
-                <tr>
-                  <th>Name</th>
-                  <th>Paid</th>
-                  <th>Owed</th>
-                  <th>Net Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {group.members.map((member) => (
-                  <tr key={member.userId}>
-                    <td>{member.name}</td>
-                    <td>₹{member.paid}</td>
-                    <td>₹{member.owed}</td>
-                    <td
-                      className={
-                        member.net >= 0
-                          ? "text-success fw-bold"
-                          : "text-danger fw-bold"
-                      }
-                    >
-                      {member.net >= 0
-                        ? `+₹${member.net}`
-                        : `-₹${Math.abs(member.net)}`}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-          </div>
-        </div>
-
+        <table className="table table-bordered mt-3">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Paid</th>
+              <th>Owed</th>
+              <th>Net</th>
+            </tr>
+          </thead>
+          <tbody>
+            {group.members.map((m) => (
+              <tr key={m.userId}>
+                <td>{m.name}</td>
+                <td>₹{m.paid}</td>
+                <td>₹{m.owed}</td>
+                <td>{m.net}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </>
   );
