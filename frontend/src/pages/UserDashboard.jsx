@@ -9,6 +9,20 @@ export default function UserDashboard() {
 
   const user = JSON.parse(localStorage.getItem("user"));
 
+const [balances, setBalances] = useState(null);
+
+useEffect(() => {
+  const fetchBalances = async () => {
+    try {
+      const res = await api.get(`/users/${user.id}/balances`);
+      setBalances(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchBalances();
+}, [user.id]);
 
 useEffect(() => {
   const fetchGroups = async () => {
@@ -81,6 +95,76 @@ useEffect(() => {
           ))}
         </div>
       </div>
+
+      {/* Divider */}
+<hr className="my-5" />
+
+<h4 className="mb-4">💰 Your Balances</h4>
+
+{balances && (
+  <div className="row">
+
+    {/* YOU OWE */}
+    <div className="col-md-6">
+      <div className="card border-danger mb-4">
+        <div className="card-header bg-danger text-white">
+          You Owe
+        </div>
+
+        <div className="card-body">
+          {balances.youOwe.length === 0 ? (
+            <p className="text-muted mb-0">You owe nothing 🎉</p>
+          ) : (
+            <ul className="list-group list-group-flush">
+              {balances.youOwe.map((b, index) => (
+                <li
+                  key={index}
+                  className="list-group-item d-flex justify-content-between"
+                >
+                  <span>{b.name}</span>
+                  <strong className="text-danger">
+                    ₹{b.amount}
+                  </strong>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div><br></br>
+
+    {/* OWED TO YOU */}
+    <div className="col-md-6">
+      <div className="card border-success mb-4">
+        <div className="card-header bg-success text-white">
+          Owed To You
+        </div>
+
+        <div className="card-body">
+          {balances.owedToYou.length === 0 ? (
+            <p className="text-muted mb-0">No one owes you</p>
+          ) : (
+            <ul className="list-group list-group-flush">
+              {balances.owedToYou.map((b, index) => (
+                <li
+                  key={index}
+                  className="list-group-item d-flex justify-content-between"
+                >
+                  <span>{b.name}</span>
+                  <strong className="text-success">
+                    ₹{b.amount}
+                  </strong>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
+
+  </div>
+)}
+
     </>
   );
 }

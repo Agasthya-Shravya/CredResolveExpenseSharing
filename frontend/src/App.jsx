@@ -37,7 +37,7 @@ function App() {
       <Route path="/addmember/:groupId" element={<AddMember />} />
       <Route path="/viewgroup/:groupId" element={<ViewGroup/>}/>
       <Route path="/addexpense/:groupId" element={<AddExpense />} />
-
+      
       <Route
         path="/groups"
         element={
