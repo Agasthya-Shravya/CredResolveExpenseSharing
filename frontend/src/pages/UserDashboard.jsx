@@ -9,18 +9,23 @@ export default function UserDashboard() {
 
   const user = JSON.parse(localStorage.getItem("user"));
 
-  useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const res = await api.get(`/users/${user.id}/groups`);
-        setGroups(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
 
-    fetchGroups();
-  }, [user.id]);
+useEffect(() => {
+  const fetchGroups = async () => {
+    try {
+      const res = await api.get(`/users/${user.id}/groups`);
+      console.log("Groups API response:", res.data);
+      console.log("Is Array:", Array.isArray(res.data));
+      setGroups(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchGroups();
+}, [user.id]);
+
+
 
   return (
     <>
@@ -50,7 +55,7 @@ export default function UserDashboard() {
                   <h5 className="card-title">{group.name}</h5>
 
                   <p className="card-text">
-                    Members: {group.users.length}
+                    Members: {group.memberCount}
                   </p>
 
                   <button

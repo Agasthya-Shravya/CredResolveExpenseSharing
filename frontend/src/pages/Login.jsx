@@ -34,7 +34,7 @@ export default function Login() {
         <div className="container-fluid py-5">
           <div className="row align-items-center">
 
-            {/* Image */}
+            
             <div className="col-md-6">
               <img
                 src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.svg"
@@ -43,7 +43,7 @@ export default function Login() {
               />
             </div>
 
-            {/* Form */}
+         
             <div className="col-md-6">
               <form onSubmit={handleLogin}>
 
