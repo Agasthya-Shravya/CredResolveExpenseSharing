@@ -2,21 +2,21 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function DashboardNavbar() {
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light border-bottom">
       <div className="container-fluid px-0">
-        {/* Left */}
         <Link className="navbar-brand fw-bold ms-3" to="/userdashboard">
           paypalzzz
         </Link>
 
-        {/* Toggle */}
+        
         <button
           className="navbar-toggler me-3"
           type="button"
@@ -26,7 +26,7 @@ export default function DashboardNavbar() {
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        {/* Menu */}
+       
         <div className="collapse navbar-collapse" id="dashboardNavbar">
           <ul className="navbar-nav me-auto ms-3 mb-2 mb-lg-0">
             <li className="nav-item">
@@ -48,7 +48,13 @@ export default function DashboardNavbar() {
             </li>
           </ul>
 
-          {/* Right */}
+         
+          {user && (
+        <div className="d-flex align-items-center text-white">
+          <div className="me-3 text-end">
+            <small className="text-muted">{user.email}</small>
+          </div>
+
           <button
             className="btn btn-outline-danger btn-sm me-3"
             onClick={handleLogout}
@@ -56,6 +62,9 @@ export default function DashboardNavbar() {
             Logout
           </button>
         </div>
+        
+      )}
+      </div>
       </div>
     </nav>
   );

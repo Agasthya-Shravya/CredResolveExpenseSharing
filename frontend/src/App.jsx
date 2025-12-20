@@ -8,7 +8,9 @@ import AddExpense from "./pages/AddExpense";
 import Balances from "./pages/Balances";
 import DashboardNavbar from "./components/DashboardNavbar";
 import Home from "./pages/Home";
-
+import CreateGroup from "./pages/CreateGroup";
+import AddMember from "./pages/AddMember";
+import ViewGroup from "./pages/ViewGroup";
 function ProtectedRoute({ children }) {
   const userId = localStorage.getItem("userId");
 
@@ -31,9 +33,10 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-       <Route path="/userdashboard" element={<UserDashboard />} />
-     
-      
+      <Route path="/userdashboard" element={<UserDashboard />} />
+      <Route path="/creategroup" element={<CreateGroup />} />
+      <Route path="/addmember/:groupId" element={<AddMember />} />
+      <Route path="/viewgroup/:groupId" element={<ViewGroup/>}/>
 
       <Route
         path="/groups"
@@ -62,8 +65,6 @@ function App() {
         }
       />
 
-      {/* Default */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
